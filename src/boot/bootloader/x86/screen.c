@@ -1,3 +1,5 @@
+#include <prototype-os/boot/bootloader/x86/asm.h>
+#include <prototype-os/types.h>
 
 #define RAMSCREEN 0xB8000       /* debut de la memoire video */
 #define SIZESCREEN 0xFA0  /* 4000, nombres d'octets d'une page texte */
@@ -74,4 +76,20 @@ void print(char *string)
     putcar(*string);
     string++;
   }
+}
+
+void move_cursor (u8 x, u8 y)
+{
+  u16 c_pos;
+
+  c_pos = y * 80 + x;
+  outb(0x3d4, 0x0f);
+  outb(0x3d5, (u8) c_pos);
+  outb(0x3d4, 0x0e);
+  outb(0x3d5, (u8) (c_pos >> 8));
+}
+
+void show_cursor (void)
+{
+  move_cursor(kX, kY);
 }
