@@ -1,6 +1,8 @@
 Prototype OS
 ============
 
+[![Build Status](https://travis-ci.org/pelallemant/prototype-os.png?branch=master)](https://travis-ci.org/pelallemant/prototype-os)
+
 This is a prototype of Operating System. Based on PepinOS tutorials for the first steps.
 
 
