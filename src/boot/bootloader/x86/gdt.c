@@ -28,7 +28,6 @@ void init_gdt_desc(u32 base, u32 limite, u8 acces, u8 other, struct gdtdesc *des
  */
 void init_gdt(void)
 {
-
   /* initialisation des descripteurs de segment */
   init_gdt_desc(0x0, 0x0, 0x0, 0x0, &kgdt[0]);
   init_gdt_desc(0x0, 0xFFFFF, 0x9B, 0x0D, &kgdt[1]);      /* code */

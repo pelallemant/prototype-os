@@ -13,8 +13,12 @@ ASM_OBJ_TMP=$(ASM_SRC:.asm=)
 C_OBJ=$(filter-out ../src/boot/bootloader/x86/kernel.o,$(C_OBJ_TMP))
 ASM_OBJ=$(filter-out ../src/boot/bootloader/x86/bootloader,$(ASM_OBJ_TMP))
 
-all:build floppy clean
+all: t build floppy clean
 #iso
+
+t:
+	@echo $(C_OBJ)
+	@echo $(ASM_OBJ)
 
 build: $(C_OBJ) $(ASM_OBJ)
 	mkdir -p ../bin
@@ -29,11 +33,11 @@ build: $(C_OBJ) $(ASM_OBJ)
 
 %: %.asm
 #	mkdir -p $(dir %.asmo) -> à créer dans tmp
-	nasm -f bin -o $@ $<
+	nasm -f elf -o $@ $<
 
 floppy:
 # kernel is set to offset 0x1000
-	ld --oformat binary -m elf_i386 -Ttext 1000 ../src/boot/bootloader/x86/kernel.o $(ASM_OBJ) $(C_OBJ) -o ../tmp/kernel
+	ld --oformat binary -m elf_i386 -Ttext 1000 ../tmp/kernel.o $(ASM_OBJ) $(C_OBJ) -o ../tmp/kernel
 # create a floppy image which executes the kernel
 	cat ../tmp/bootsect ../tmp/kernel /dev/zero | dd of=../bin/floppyA bs=512 count=2880
 
@@ -63,6 +67,8 @@ iso:
 	sudo chmod 0777 ../bin/os.iso 
 	
 clean:
+	rm -f ../src/boot/bootloader/x86/kernel.o
+	rm -f ../src/boot/bootloader/x86/bootloader
 	rm -f $(C_OBJ)
 	rm -f $(ASM_OBJ)
 
