@@ -5,6 +5,12 @@ Prototype OS
 
 This is a prototype of Operating System. Based on PepinOS tutorials for the first steps.
 
+To test it, you can use:
+
+- qemu
+- TODO: bochs (configuration file to write)
+- TODO: virtualbox (correct iso to generate)
+
 
 Requirements: 
 =============
@@ -13,6 +19,11 @@ Ubuntu
 ------
 
 `sudo apt-get install libc6-dev-i386`
+
+Compilation
+===========
+
+cd build && make
 
 Objectives
 ==========
