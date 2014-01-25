@@ -1,20 +1,37 @@
-all: build floppy
+# Recursive Wildcard Function
+rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
+
+# Sources
+C_SRC=$(call rwildcard, ../src/, *.c)
+ASM_SRC=$(call rwildcard, ../src/, *.asm)
+
+C_OBJ_TMP=$(C_SRC:.c=.o)
+ASM_OBJ_TMP=$(ASM_SRC:.asm=)
+
+C_OBJ=$(filter-out ../src/boot/bootloader/x86/kernel.o,$(C_OBJ_TMP))
+ASM_OBJ=$(filter-out ../src/boot/bootloader/x86/bootloader,$(ASM_OBJ_TMP))
+
+all:build floppy clean
 #iso
 
-build:
+build: $(C_OBJ) $(ASM_OBJ)
 	mkdir -p ../bin
 	mkdir -p ../tmp
 # compile the bootloader
 	nasm -f bin -o ../tmp/bootsect ../src/boot/bootloader/x86/bootloader.asm
 # compile the kernel
 	gcc -m32 -c -o ../tmp/kernel.o ../src/boot/bootloader/x86/kernel.c
-	gcc -m32 -c -o ../tmp/screen.o ../src/boot/bootloader/x86/screen.c
-	gcc -m32 -c -o ../tmp/gdt.o ../src/boot/bootloader/x86/gdt.c
-	gcc -m32 -c -o ../tmp/main.o ../src/main.c
+
+%.o: %.c
+	gcc -m32 -c -o $@ $< $(CFLAGS)
+
+%: %.asm
+#	mkdir -p $(dir %.asmo) -> à créer dans tmp
+	nasm -f bin -o $@ $<
 
 floppy:
 # kernel is set to offset 0x1000
-	ld --oformat binary -m elf_i386 -Ttext 1000 ../tmp/kernel.o ../tmp/screen.o ../tmp/main.o ../tmp/gdt.o -o ../tmp/kernel
+	ld --oformat binary -m elf_i386 -Ttext 1000 ../src/boot/bootloader/x86/kernel.o $(ASM_OBJ) $(C_OBJ) -o ../tmp/kernel
 # create a floppy image which executes the kernel
 	cat ../tmp/bootsect ../tmp/kernel /dev/zero | dd of=../bin/floppyA bs=512 count=2880
 
@@ -43,7 +60,10 @@ iso:
 	sudo losetup -d /dev/loop0
 	sudo chmod 0777 ../bin/os.iso 
 	
+clean:
+	rm -f $(C_OBJ)
+	rm -f $(ASM_OBJ)
 
-mrproper:
+mrproper: clean
 	rm -rf ../tmp
 	rm -rf ../bin
