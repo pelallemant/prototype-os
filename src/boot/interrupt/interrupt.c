@@ -109,6 +109,29 @@ void isr_default_int(void)
 	print("interrupt\n");
 }
 
+
+void isr_GP_exc(void)
+{
+	print("#GP\n");
+	asm("hlt");
+}
+
+void isr_PF_exc(void)
+{
+	u32 faulting_addr;
+	u32 eip;
+
+ 	asm(" 	movl 60(%%ebp), %%eax; \
+    		mov %%eax, %0;         \
+		mov %%cr2, %%eax;      \
+		mov %%eax, %1": "=m"(eip), "=m"(faulting_addr): );
+
+  print("#PF on eip\n");
+	//printk("#PF on eip: %p. cr2: %p\n", eip, faulting_addr);
+
+	asm("hlt");
+}
+
 void isr_clock_int(void)
 {
 	static int tic = 0;
@@ -119,6 +142,8 @@ void isr_clock_int(void)
 		tic = 0;
 		//print("clock\n");
 	}
+
+  // schedule();
 }
 
 void isr_kbd_int(void)

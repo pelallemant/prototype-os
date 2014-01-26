@@ -56,11 +56,15 @@ start:
     mov dword [gdtptr+2], ecx
 
 ; we leave real mode to protected mode
+
     cli ; disable interrupts
     lgdt [gdtptr]    ; load the gdt
+
+; CR0 first bit set to 1 -> enable protected mode 
     mov eax, cr0
     or  ax, 1
-    mov cr0, eax        ; PE set to 1 (CR0)
+    mov cr0, eax
+; now we are in protected mode
 
 ; clear CPU cache
 ; do not remove the 2 following lines

@@ -6,6 +6,7 @@ extern kattr;
 
 void main();
 
+void start_next();
 void init_gdt(void);
 
 void _start(void)
@@ -14,13 +15,6 @@ void _start(void)
   kY = 0;
   kattr = 0x5F;
   
-  // init interrupts  
-  init_idt();
-	print("kernel : idt loaded\n");
-
-	init_pic();
-	print("kernel : pic configured\n");
-
   /* initialisation de la GDT et des segments */
   init_gdt();
 
@@ -34,5 +28,28 @@ void _start(void)
   // calling a new function create a new stack frame, so %esp is saved (gcc use %esp when you call functions 
   // with parameters and it would be a problem)
 
+  start_next();
+}
+
+void start_next()
+{
+  // init interrupts  
+  init_idt();
+	print("kernel : idt loaded\n");
+
+	init_pic();
+	print("kernel : pic configured\n");
+
+  /* Initialisation du TSS */
+	asm("	movw $0x38, %ax \n \
+		ltr %ax");
+	print("kernel : tr loaded\n");
+
+	init_mm();
+	print("kernel : paging enable\n");
+
+	move_cursor(-1, -1); // hide cursor
+
   main();
 }
+
