@@ -103,12 +103,12 @@ u8 kbdmap[] = {
 
 extern void scrollup(unsigned int);
 extern void print(char *);
+extern void printk(char *, ...);
 
 void isr_default_int(void)
 {
 	print("interrupt\n");
 }
-
 
 void isr_GP_exc(void)
 {
@@ -126,8 +126,8 @@ void isr_PF_exc(void)
 		mov %%cr2, %%eax;      \
 		mov %%eax, %1": "=m"(eip), "=m"(faulting_addr): );
 
-  print("#PF on eip\n");
-	//printk("#PF on eip: %p. cr2: %p\n", eip, faulting_addr);
+  //print("#PF on eip\n");
+	printk("#Page Fault on eip: %p. cr2: %p\n", eip, faulting_addr);
 
 	asm("hlt");
 }
@@ -143,7 +143,7 @@ void isr_clock_int(void)
 		//print("clock\n");
 	}
 
-  // schedule();
+  schedule();
 }
 
 void isr_kbd_int(void)
@@ -202,4 +202,21 @@ void isr_kbd_int(void)
   show_cursor();
 }
 
+
+void do_syscalls(int sys_num)
+{
+	char *u_str;
+	int i;
+
+	if (sys_num == 1) {
+		asm("mov %%ebx, %0": "=m"(u_str) :);
+		for (i = 0; i < 100000; i++);	/* temporisation */
+		print(u_str);
+	} else {
+		printk("unknown syscall %d\n", sys_num);
+    //print("unknown syscall\n");
+	}
+
+	return;
+}
 

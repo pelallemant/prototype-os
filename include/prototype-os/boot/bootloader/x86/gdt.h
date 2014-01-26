@@ -23,14 +23,6 @@ struct gdtr {
 	u32 base;
 } __attribute__ ((packed));
 
-void init_gdt_desc(u32, u32, u8, u8, struct gdtdesc *);
-void init_gdt(void);
-
-extern struct gdtdesc kgdt[];
-extern struct gdtr kgdtr;
-extern struct tss default_tss;
-
-/*  */
 struct tss {
 	u16 previous_task, __previous_task_unused;
 	u32 esp0;
@@ -50,6 +42,14 @@ struct tss {
 	u16 ldt_selector, __ldt_sel_unused;
 	u16 debug_flag, io_map;
 } __attribute__ ((packed));
+
+void init_gdt_desc(u32, u32, u8, u8, struct gdtdesc *);
+void init_gdt(void);
+
+extern struct gdtdesc kgdt[];
+extern struct gdtr kgdtr;
+extern struct tss default_tss;
+
 
 #endif
 

@@ -1,7 +1,7 @@
 # Recursive Wildcard Function
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
 
-CFLAGS= -I ../include
+CFLAGS= -I ../include -fno-stack-protector
 
 # Sources
 C_SRC=$(call rwildcard, ../src/, *.c)
@@ -26,7 +26,7 @@ build: $(C_OBJ) $(ASM_OBJ)
 # compile the bootloader
 	nasm -f bin -o ../tmp/bootsect ../src/boot/bootloader/x86/bootloader.asm
 # compile the kernel
-	gcc -m32 -c -o ../tmp/kernel.o ../src/boot/bootloader/x86/kernel.c
+	gcc -m32 -c -o ../tmp/kernel.o ../src/boot/bootloader/x86/kernel.c $(CFLAGS)
 
 %.o: %.c
 	gcc -m32 -c -o $@ $< $(CFLAGS)

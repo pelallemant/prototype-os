@@ -25,15 +25,13 @@ void main()
 {
   __kernel.mode = KERNEL_MODE_TEXT;
 
-  asm_sti; // re-activate interrupts
-
   kattr = 0x5E;
   print("Here is the main !\n");
 
   kattr = 0x4E;
   print("Hello world\n");
 
-  show_cursor();
+  //show_cursor();
   
   while (1);
 }

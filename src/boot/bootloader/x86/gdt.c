@@ -41,9 +41,9 @@ void init_gdt(void)
   init_gdt_desc(0x0, 0x0, 0x97, 0x0D, &kgdt[3]);    /* stack */
 
   /* descripteur de segments en mode utilisateur */
-  init_gdt_desc(0x30000, 0x0, 0xFF, 0x0D, &kgdt[4]); /* ucode */
-  init_gdt_desc(0x30000, 0x0, 0xF3, 0x0D, &kgdt[5]); /* udata */
-  init_gdt_desc(0x0, 0x20,    0xF7, 0x0D, &kgdt[6]); /* ustack */
+  init_gdt_desc(0x0, 0xFFFFF, 0xFF, 0x0D, &kgdt[4]);	/* ucode */
+	init_gdt_desc(0x0, 0xFFFFF, 0xF3, 0x0D, &kgdt[5]);	/* udata */
+	init_gdt_desc(0x0, 0x0, 0xF7, 0x0D, &kgdt[6]);		/* ustack */
 
   init_gdt_desc((u32) & default_tss, 0x67, 0xE9, 0x00, &kgdt[7]);	/* descripteur de tss */
 
