@@ -1,4 +1,4 @@
-%define BASE    0x100  ; 0x0100:0x0 = 0x1000
+%define BASE    0x100  ; 0x0100:0x0 = 0x1000  -> the offset of the kernel _start routine
 %define KSIZE   50     ; nombre de secteurs a charger
 
 [BITS 16]
@@ -22,13 +22,15 @@ start:
 
 ; loading the kernel into the RAM
 
+; first call to a BIOS INTERUPT: init
     xor ax, ax   ; ax = 0x0000 => now ah = 0x00
     int 0x13     ; BIOS INTERUPT: int 0x13 with ah=0x0: Reset Disk Drive
 
+; second call to a BIOS INTERUPT: copy the kernel
     push es           ; save "extra segment" register state
     mov ax, BASE      
     mov es, ax        ; "mov es, BASE" doesn't exists
-    mov bx, 0
+    mov bx, 0         ; es:bx -> buffer adress pointer BASE:0x0
     mov ah, 2         ; 0x02
     mov al, KSIZE     ; sectors to read count
     mov ch, 0         ; cylinder
@@ -38,8 +40,8 @@ start:
     int 0x13          ; BIOS INTERUPT: int 0x13 with ah = 0x02: Read Sectors From Drive
     pop es            ; load es state
 
-; initialisation du pointeur sur la GDT
-    mov ax, gdtend    ; calcule la limite de GDT
+; initialization of the gdt pointer
+    mov ax, gdtend    ; calculate the GDT limit
     mov bx, gdt
     sub ax, bx
     mov word [gdtptr], ax
@@ -54,23 +56,33 @@ start:
     mov dword [gdtptr+2], ecx
 
 ; we leave real mode to protected mode
-    cli
-    lgdt [gdtptr]    ; charge la gdt
+    cli ; disable interrupts
+    lgdt [gdtptr]    ; load the gdt
     mov eax, cr0
     or  ax, 1
-    mov cr0, eax        ; PE mis a 1 (CR0)
+    mov cr0, eax        ; PE set to 1 (CR0)
 
-    jmp next
+; clear CPU cache
+; do not remove the 2 following lines
+    jmp next  
 next:
-    mov ax, 0x10        ; initialize data segment
+
+; reinitialization of data segment
+
+    mov ax, 0x10
     mov ds, ax
     mov fs, ax
     mov gs, ax
     mov es, ax
+
+; reinitialization of stack segment
+
     mov ss, ax
     mov esp, 0x9F000
 
-    jmp dword 0x8:0x1000    ; reinitialise le segment de code
+; now we call the kernel
+
+    jmp dword 0x8:0x1000 ; jump to kernel routine
 
 ;--------------------------------------------------------------------
 bootdrv:  db 0
