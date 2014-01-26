@@ -5,40 +5,38 @@
 [ORG 0x0]
 
 jmp start
-;%include "UTIL.INC"
 start:
 
-; initialisation des segments en 0x07C0
+; The CPU (i386) is currently in real mode
+;
+; initialize the segments into the adress 0x07C0:0X0 = 0x7C00
     mov ax, 0x07C0
     mov ds, ax
     mov es, ax
-    mov ax, 0x8000    ; stack en 0xFFFF
+    mov ax, 0x8000 ; stack in 0xFFFF
     mov ss, ax
     mov sp, 0xf000
 
-; recuparation de l'unite de boot
-    mov [bootdrv], dl    
+; we get the boot drive into bootdrv
+    mov [bootdrv], dl  ; dl is written into bootdrv
 
-; affiche un msg
-;    mov si, msgDebut
-;    call afficher
+; loading the kernel into the RAM
 
-; charger le noyau
-    xor ax, ax
-    int 0x13
+    xor ax, ax   ; ax = 0x0000 => now ah = 0x00
+    int 0x13     ; BIOS INTERUPT: int 0x13 with ah=0x0: Reset Disk Drive
 
-    push es
-    mov ax, BASE
-    mov es, ax
+    push es           ; save "extra segment" register state
+    mov ax, BASE      
+    mov es, ax        ; "mov es, BASE" doesn't exists
     mov bx, 0
-    mov ah, 2
-    mov al, KSIZE
-    mov ch, 0
-    mov cl, 2
-    mov dh, 0
-    mov dl, [bootdrv]
-    int 0x13
-    pop es
+    mov ah, 2         ; 0x02
+    mov al, KSIZE     ; sectors to read count
+    mov ch, 0         ; cylinder
+    mov cl, 2         ; sector
+    mov dh, 0         ; head
+    mov dl, [bootdrv] ; dl = drive
+    int 0x13          ; BIOS INTERUPT: int 0x13 with ah = 0x02: Read Sectors From Drive
+    pop es            ; load es state
 
 ; initialisation du pointeur sur la GDT
     mov ax, gdtend    ; calcule la limite de GDT
@@ -55,7 +53,7 @@ start:
     add ecx, ebx
     mov dword [gdtptr+2], ecx
 
-; passage en modep
+; we leave real mode to protected mode
     cli
     lgdt [gdtptr]    ; charge la gdt
     mov eax, cr0
@@ -64,19 +62,18 @@ start:
 
     jmp next
 next:
-    mov ax, 0x10        ; segment de donne
+    mov ax, 0x10        ; initialize data segment
     mov ds, ax
     mov fs, ax
     mov gs, ax
     mov es, ax
     mov ss, ax
-    mov esp, 0x9F000    
+    mov esp, 0x9F000
 
     jmp dword 0x8:0x1000    ; reinitialise le segment de code
 
 ;--------------------------------------------------------------------
 bootdrv:  db 0
-msgDebut: db "Chargement du kernel", 13, 10, 0
 ;--------------------------------------------------------------------
 gdt:
     db 0, 0, 0, 0, 0, 0, 0, 0

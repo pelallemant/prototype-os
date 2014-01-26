@@ -9,7 +9,6 @@ char kX = 0;        /* position courante du curseur a l'ecran */
 char kY = 17;
 char kattr = 0x0E;        /* attributs video des caracteres a afficher */
 
-
 /*
  * 'scrollup' scrolle l'ecran (la console mappee en ram) vers le haut
  * de n lignes (de 0 a 25).
@@ -83,10 +82,10 @@ void move_cursor (u8 x, u8 y)
   u16 c_pos;
 
   c_pos = y * 80 + x;
-  outb(0x3d4, 0x0f);
-  outb(0x3d5, (u8) c_pos);
-  outb(0x3d4, 0x0e);
-  outb(0x3d5, (u8) (c_pos >> 8));
+  asm_outb(0x3d4, 0x0f);
+  asm_outb(0x3d5, (u8) c_pos);
+  asm_outb(0x3d4, 0x0e);
+  asm_outb(0x3d5, (u8) (c_pos >> 8));
 }
 
 void show_cursor (void)

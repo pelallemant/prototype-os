@@ -12,7 +12,7 @@ extern kattr;
 
 void main()
 {
-  sti;
+  asm_sti; // réactivation des interruptions
 
   kattr = 0x5E;
   print("Here is the main !\n");

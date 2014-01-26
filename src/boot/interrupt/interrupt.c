@@ -117,7 +117,7 @@ void isr_clock_int(void)
 	if (tic % 100 == 0) {
 		sec++;
 		tic = 0;
-		print("clock\n");
+		//print("clock\n");
 	}
 }
 
@@ -130,10 +130,10 @@ void isr_kbd_int(void)
   static int ctrl_enable;
 
   do {
-    i = inb(0x64);
+    i = asm_inb(0x64);
   } while ((i & 0x01) == 0);
 
-  i = inb(0x60);
+  i = asm_inb(0x60);
   i--;
 
   //// putcar('\n'); dump(&i, 1); putcar(' ');
